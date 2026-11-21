@@ -1,0 +1,5 @@
+record_type,group,applicants,selected,all_applicant_selection_rate,qualified_applicants,qualified_selected,qualified_selection_rate,comparison_low_group,comparison_high_group,selection_rate_ratio,screening_interpretation,sample_warning
+group,Group_A,50,18,0.3600,40,18,0.4500,,,,,
+group,Group_B,50,12,0.2400,40,12,0.3000,,,,,
+comparison,All applicants,,,,,,,Group_B,Group_A,0.6667,Below optional 0.80 screening threshold,
+comparison,Qualified applicants,,,,,,,Group_B,Group_A,0.6667,Below optional 0.80 screening threshold,
