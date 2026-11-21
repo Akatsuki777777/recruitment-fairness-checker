@@ -31,6 +31,10 @@ th{color:var(--accent)}
 .warning{border-left:3px solid #e8b45d;padding:12px;background:#252536}
 .error{color:#ff9999}.good{color:#8ee0b0}
 .small{font-size:13px}
+.sample-box{background:#111d30;border:1px solid var(--accent);border-radius:12px;padding:16px;margin:20px 0}
+.sample-box h3{margin:0 0 6px;color:var(--text)}
+.sample-box p{margin:6px 0 12px}
+.sample{margin-top:4px}
 .hidden{display:none}
 footer{border-top:1px solid var(--border);margin-top:30px;padding-top:15px}
 </style>
@@ -49,7 +53,11 @@ footer{border-top:1px solid var(--border);margin-top:30px;padding-top:15px}
 
 <input id="file" type="file" accept="*/*">
 <button id="analyse">Analyse file</button>
-<a class="sample" href="/sample_recruitment.csv" download>Download sample CSV</a>
+<div class="sample-box">
+<h3>Try the analyzer with sample data</h3>
+<p>No recruitment dataset available? Download our ready-to-use sample containing 100 synthetic candidate records. Upload it above to test how the analyzer works.</p>
+<a class="sample" href="/sample_recruitment.csv" download>Download test dataset (CSV)</a>
+</div>
 <p class="small">Files are sent to the hosted server for analysis and are not intentionally stored by this application. Do not upload personal or confidential candidate information. Maximum file size: 10 MB.</p>
 <div id="message" role="status" aria-live="polite"></div>
 </section>
