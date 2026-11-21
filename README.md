@@ -1,106 +1,96 @@
 # Recruitment Fairness Checker
 
-A beginner-built Python tool for exploring selection-rate differences in
-synthetic recruitment data. It is an independent learning project focused
-on practical AI governance, algorithmic fairness and responsible evaluation.
+An independent Python and Flask project exploring recruitment outcome disparities through group-level selection-rate analysis.
 
-## Project Overview
+Built as a practical learning project in AI governance, algorithmic fairness, responsible evaluation and human oversight.
 
-The checker analyses recruitment outcomes across groups and calculates:
+**Live application:** https://recruitment-fairness-checker.onrender.com
 
-- Number of applicants in each group
-- Number and percentage selected
-- Number of qualified applicants
-- Selection rate among qualified applicants
-- Lowest-to-highest selection-rate ratios
-- Flags for ratios below an optional 0.80 screening threshold
+**Source code:** https://github.com/Akatsuki777777/recruitment-fairness-checker
 
-It also generates a CSV report for further review.
+## 1. Project Purpose
 
-## Why This Project Matters
+Recruitment decisions can affect people's access to employment opportunities. When selection processes use automated systems or structured decision-making, differences in outcomes across groups deserve careful examination.
 
-Automated recruitment systems can affect access to employment.
-Comparing selection outcomes can help identify patterns that deserve
-closer investigation.
+This project provides a basic tool for comparing recruitment outcomes across groups. It calculates selection rates, compares the lowest and highest rates, and flags results that may warrant further investigation.
 
-This tool demonstrates a basic, practical approach to examining
-potential disparities. It does not determine whether an AI system
-is fair, discriminatory or legally compliant.
+The project is intended for educational exploration. It does not establish whether a recruitment system is fair, discriminatory or legally compliant.
 
-## Technology
+## 2. Features
+
+- Upload recruitment datasets in CSV, TXT, XLSX and experimental text-based PDF formats.
+- Validate required columns and candidate records.
+- Check unique candidate identifiers and binary values.
+- Reject selections of candidates marked as unqualified.
+- Calculate applicant and selection totals for each group.
+- Calculate selection rates for all applicants and qualified applicants.
+- Compare the lowest and highest group selection rates.
+- Flag ratios below the optional 0.80 screening threshold.
+- Identify groups with fewer than 30 applicants.
+- Download a CSV analysis report containing calculated results.
+- Download a prepared synthetic sample dataset.
+- Run automated tests for important validation cases.
+
+## 3. How the Analysis Works
+
+The application calculates two types of selection rates.
+
+**All-applicant selection rate**
+
+Number of selected applicants divided by the total number of applicants in a group.
+
+**Qualified-applicant selection rate**
+
+Number of selected qualified applicants divided by the total number of qualified applicants in a group.
+
+It then calculates the lowest-to-highest selection-rate ratio:
+
+Ratio = Lowest group selection rate / Highest group selection rate
+
+A ratio below 0.80 is flagged as an optional screening signal.
+
+The 0.80 threshold is not a universal legal standard and should not be interpreted as proof of discrimination.
+
+## 4. Technology
 
 - Python 3
-- CSV data processing
-- Python standard library
-- Unit testing with `unittest`
+- Flask — web application and API
+- OpenPyXL — Excel workbook reading
+- pypdf — text extraction from PDFs
+- CSV and Python standard library — data processing
+- unittest — automated testing
+- Gunicorn — production application server
+- HTML, CSS and JavaScript — user interface
 
-No third-party Python packages are required.
+## 5. Supported Input Format
 
-## Project Files
+Each dataset must contain these four columns:
 
-| File | Description |
+| Column | Description |
 |---|---|
-| `fairness_checker.py` | Main Version 3 program |
-| `sample_recruitment.csv` | Synthetic 100-record dataset |
-| `fairness_report.csv` | Generated analysis report |
-| `test_fairness_checker.py` | Automated test suite |
-| `fairness_checker_v1.py` | Earlier development version |
-| `fairness_checker_v2.py` | Earlier development version |
+| candidate_id | Unique candidate identifier |
+| group | Group used for comparison |
+| qualified | 1 if qualified, otherwise 0 |
+| selected | 1 if selected, otherwise 0 |
 
-## Requirements
+Additional requirements:
 
-- Python 3.8 or later
-- A terminal or command-line environment
+- Candidate IDs must be unique and non-empty.
+- Group names must be present.
+- qualified and selected must contain only 0 or 1.
+- An unqualified candidate cannot be marked as selected.
+- Maximum upload size: 10 MB.
 
-## How to Run
+**File format notes**
 
-Clone or download this repository, then open its directory.
+- CSV: Comma-separated data.
+- TXT: Delimited text using comma, semicolon or tab.
+- XLSX: Data must be in the first worksheet.
+- PDF: Experimental support for PDFs containing extractable, delimited table text. Scanned PDFs and complex visual tables are not supported.
 
-Run the checker:
+## 6. Example Results
 
-```bash
-python fairness_checker.py
-```
-
-The program reads `sample_recruitment.csv` and creates or updates
-`fairness_report.csv`.
-
-## Run the Automated Tests
-
-```bash
-python -m unittest -v test_fairness_checker.py
-```
-
-The current test suite contains six tests covering:
-
-1. Valid input data
-2. Empty datasets
-3. Missing required columns
-4. Duplicate candidate IDs
-5. Invalid binary values
-6. Unqualified candidate selection
-
-Latest recorded verification: **6 tests passed**.
-
-## Input Data Format
-
-The input CSV must contain these columns:
-
-| Column | Meaning |
-|---|---|
-| `candidate_id` | Unique candidate identifier |
-| `group` | Group used for comparison |
-| `qualified` | 1 if qualified, otherwise 0 |
-| `selected` | 1 if selected, otherwise 0 |
-
-The binary fields must contain valid 0 or 1 values.
-
-The supplied dataset is fictional and was created for demonstration
-and testing. It does not contain real candidate information.
-
-## Example Results
-
-For the included 100-record synthetic dataset:
+The included synthetic dataset contains 100 fictional candidate records.
 
 | Measure | Group A | Group B |
 |---|---:|---:|
@@ -110,32 +100,94 @@ For the included 100-record synthetic dataset:
 | Qualified applicants | 40 | 40 |
 | Qualified selection rate | 45% | 30% |
 
-The lowest-to-highest selection-rate ratio is approximately **0.67**
-for both comparisons.
+The lowest-to-highest ratio is approximately **0.67** for both comparisons.
 
-This result is a reason to investigate further, not proof of
-discrimination.
+This is a screening signal that may justify further investigation. It is not evidence by itself of discrimination or unfair treatment.
 
-## Important Limitations
+## 7. Running the Application Locally
 
-- The supplied dataset is synthetic and deliberately constructed.
-- Small samples can produce unstable rates.
-- The 0.80 threshold is an optional screening convention, not a
-  universal legal standard.
-- Selection-rate ratios alone cannot establish discrimination or fairness.
-- Job relevance, data quality, qualifications and other contextual
-  factors require examination.
-- The tool does not test a real AI model or establish legal compliance.
-- Results should be reviewed by appropriately qualified people before
-  any organisational decision is made.
+Clone the repository:
 
-## Project Status
+```bash
+git clone https://github.com/Akatsuki777777/recruitment-fairness-checker.git
+cd recruitment-fairness-checker
+```
 
-Version 3 — Early-stage independent learning prototype.
+Create and activate a virtual environment if desired, then install dependencies:
 
-The project demonstrates basic data validation, group-level outcome
-comparison, CSV reporting and automated testing. It is not a production
-recruitment audit system.
+```bash
+pip install -r requirements.txt
+```
+
+Start the Flask application:
+
+```bash
+python app.py
+```
+
+Open the local address shown by Flask in your browser. By default, this application uses:
+
+`http://127.0.0.1:5000`
+
+## 8. Running Automated Tests
+
+Run:
+
+```bash
+python -m unittest -v
+```
+
+The current test suite contains six tests covering:
+
+1. Valid input data
+2. Empty datasets
+3. Missing required columns
+4. Duplicate candidate IDs
+5. Invalid binary values
+6. Selection of an unqualified candidate
+
+**Latest recorded result:** Six tests passed.
+
+## 9. Project Structure
+
+| File | Purpose |
+|---|---|
+| app.py | Flask application, upload handling and analysis API |
+| fairness_checker.py | Python command-line analysis program |
+| index.html | Web application interface |
+| test_fairness_checker.py | Automated tests |
+| sample_recruitment.csv | Synthetic sample dataset |
+| fairness_report.csv | Example command-line analysis output |
+| requirements.txt | Python dependencies |
+
+## 10. Limitations and Responsible Use
+
+- The supplied data is synthetic and does not represent real recruitment outcomes.
+- Small sample sizes can produce unstable selection rates.
+- The 0.80 threshold is an optional screening convention, not a universal legal test.
+- Selection-rate differences alone cannot establish discrimination, causation or fairness.
+- The analysis does not account for job relevance, data quality, confounding variables or the full recruitment process.
+- Qualified-applicant comparisons do not establish that qualification criteria are themselves fair.
+- PDF support is experimental and depends on extractable, correctly structured text.
+- Uploaded data should not contain personal or confidential candidate information.
+- The tool should not be used as the sole basis for real recruitment decisions.
+
+Meaningful fairness assessments require contextual investigation, appropriate expertise, and human oversight.
+
+## 11. Project Status
+
+**Status:** Independent learning prototype.
+
+The project demonstrates practical work in:
+
+- Data validation and processing
+- Group-level outcome analysis
+- Selection-rate comparisons
+- Basic fairness screening
+- Automated software testing
+- Building and deploying a small web application
+
+It is not a production recruitment auditing system or a validated AI fairness assessment framework.
 
 ## Author
 
@@ -147,5 +199,4 @@ recruitment audit system.
 
 ---
 
-Created as an independent educational project exploring practical
-AI governance and recruitment fairness.
+Created as an independent educational project exploring practical AI governance, recruitment fairness and responsible evaluation.
