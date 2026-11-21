@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recruitment Fairness Checker</title>
+<style>
+:root{color-scheme:dark;--bg:#101827;--panel:#192438;--text:#edf2fa;--muted:#aab8ca;--accent:#78b8ff;--border:#30415a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,sans-serif}
+main{max-width:1000px;margin:auto;padding:25px 17px 55px}
+header{padding:25px 0}
+h1{font-size:clamp(29px,6vw,43px);line-height:1.15}
+h2{font-size:21px}
+p,.muted{color:var(--muted)}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:bold;letter-spacing:2px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+input,button{font:inherit}
+input[type=file]{display:block;width:100%;margin:18px 0}
+button,.sample{display:inline-block;background:var(--accent);color:#102035;border:0;border-radius:8px;padding:11px 16px;font-weight:bold;text-decoration:none;cursor:pointer}
+button:disabled{opacity:.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}
+.metric{background:#111d30;border:1px solid var(--border);border-radius:10px;padding:14px}
+.metric strong{display:block;font-size:24px}
+.metric span{color:var(--muted);font-size:13px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--border)}
+th{color:var(--accent)}
+.status{background:#111d30;border-radius:8px;padding:13px;margin:12px 0;overflow-wrap:anywhere}
+.warning{border-left:3px solid #e8b45d;padding:12px;background:#252536}
+.error{color:#ff9999}.good{color:#8ee0b0}
+.small{font-size:13px}
+.hidden{display:none}
+footer{border-top:1px solid var(--border);margin-top:30px;padding-top:15px}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">INDEPENDENT PYTHON LEARNING PROJECT</div>
+<h1>Recruitment Fairness Checker</h1>
+<p>Compare recruitment selection rates across groups using structured candidate data. This prototype provides descriptive screening signals, not a determination of discrimination or fairness.</p>
+</header>
+
+<section class="panel">
+<h2>1. Upload recruitment data</h2>
+<p>Supported formats: CSV, TXT, Excel (.xlsx), and text-based PDF.</p>
+
+<input id="file" type="file" accept="*/*">
+<button id="analyse">Analyse file</button>
+<a class="sample" href="/sample_recruitment.csv" download>Download sample CSV</a>
+<p class="small">Files are sent to the hosted server for analysis and are not intentionally stored by this application. Do not upload personal or confidential candidate information. Maximum file size: 10 MB.</p>
+<div id="message" role="status" aria-live="polite"></div>
+</section>
+
+<section id="results" class="hidden">
+<div class="panel">
+<h2>2. Dataset overview</h2>
+<div class="grid" id="overview"></div>
+</div>
+<div class="panel">
+<h2>3. Group results</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Group</th><th>Applicants</th><th>Selected</th><th>Selection rate</th><th>Qualified</th><th>Qualified rate</th></tr></thead>
+<tbody id="groupRows"></tbody>
+</table>
+</div>
+</div>
+<div class="panel">
+<h2>4. Rate comparisons</h2>
+<div id="comparisons"></div>
+</div>
+<div class="panel warning">
+<h2>Interpretation and limitations</h2>
+<ul>
+<li>The 0.80 ratio is an optional screening convention, not a universal legal test.</li>
+<li>A ratio below 0.80 is a signal for further investigation, not proof of discrimination.</li>
+<li>Groups with fewer than 30 applicants are flagged; small samples make rates unstable.</li>
+<li>These calculations do not account for job relevance, data quality, confounding factors or the full selection process.</li>
+<li>Qualified-applicant comparisons are descriptive and do not establish that qualification criteria are fair.</li>
+<li>This tool does not establish causation, fairness or legal compliance.</li>
+</ul>
+</div>
+</section>
+
+
+<section class="panel">
+<h2>How to Prepare Your Data</h2>
+<p><strong>What should your file contain?</strong></p>
+<div class="status">
+<h3>Required columns</h3>
+<p>Your first row must contain these exact column names:</p>
+<code>candidate_id, group, qualified, selected</code>
+<p><strong>What each column means:</strong></p>
+<ul>
+<li><strong>candidate_id:</strong> A unique ID for each applicant, e.g. C001.</li>
+<li><strong>group:</strong> The group being compared, e.g. Group_A or Group_B.</li>
+<li><strong>qualified:</strong> Enter 1 if qualified, or 0 if not qualified.</li>
+<li><strong>selected:</strong> Enter 1 if selected, or 0 if not selected.</li>
+</ul>
+<h3>Example of correctly formatted data</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>candidate_id</th><th>group</th><th>qualified</th><th>selected</th></tr></thead>
+<tbody>
+<tr><td>C001</td><td>Group_A</td><td>1</td><td>1</td></tr>
+<tr><td>C002</td><td>Group_A</td><td>1</td><td>0</td></tr>
+<tr><td>C003</td><td>Group_B</td><td>1</td><td>1</td></tr>
+<tr><td>C004</td><td>Group_B</td><td>0</td><td>0</td></tr>
+</tbody>
+</table>
+</div>
+<h3>Supported file formats</h3>
+<ul>
+<li><strong>CSV (.csv):</strong> Save your data as a comma-separated CSV file.</li>
+<li><strong>Text (.txt):</strong> Use a delimited text file with the column names in the first row.</li>
+<li><strong>Excel (.xlsx):</strong> Put the data in the first worksheet, with column names in the first row.</li>
+<li><strong>PDF (.pdf):</strong> Experimental support. The PDF must contain extractable text in a delimited table format. Scanned PDFs and complex visual tables may not work.</li>
+</ul>
+<p><strong>Important:</strong> Use unique candidate IDs, enter only 1 or 0 for qualified and selected, and do not select an unqualified candidate. Maximum file size: 10 MB. Old Excel .xls files are not supported.</p>
+</div>
+</section>
+<footer>
+<p class="small">Independent learning prototype. Sample data is synthetic. Do not use this tool alone to make real recruitment decisions.</p>
+</footer>
+</main>
+
+<script>
+const fileInput=document.getElementById("file");
+const message=document.getElementById("message");
+const results=document.getElementById("results");
+const analyseButton=document.getElementById("analyse");
+
+function element(tag,text){
+ const node=document.createElement(tag);
+ if(text!==undefined)node.textContent=text;
+ return node;
+}
+
+function metric(label,value){
+ const card=element("div");card.className="metric";
+ card.append(element("strong",String(value)),element("span",label));
+ return card;
+}
+
+function comparison(title,data){
+ const box=element("div");box.className="status";
+ box.append(element("strong",title));
+ let detail=data.message;
+ if(data.ratio!==undefined){
+  detail=`Lowest-rate group: ${data.low_group} | Highest-rate group: ${data.high_group} | Lowest-to-highest ratio: ${data.ratio.toFixed(2)} | ${data.message}`;
+ }
+ box.append(element("p",detail));
+ return box;
+}
+
+function display(data){
+ const overview=document.getElementById("overview");
+ overview.replaceChildren(
+  metric("Candidate records",data.total),
+  metric("Groups",data.group_count),
+  metric("Selected",data.selected_total),
+  metric("Overall selection rate",(data.overall_rate*100).toFixed(1)+"%")
+ );
+
+ const body=document.getElementById("groupRows");
+ body.replaceChildren();
+
+ for(const g of data.groups){
+  const tr=element("tr");
+  [
+   g.group,g.applicants,g.selected,
+   (g.all_rate*100).toFixed(1)+"%",
+   g.qualified,
+   g.qualified_rate===null?"N/A":(g.qualified_rate*100).toFixed(1)+"%"
+  ].forEach(value=>tr.append(element("td",String(value))));
+  body.append(tr);
+
+  if(g.small_sample){
+   const warning=element("tr");
+   const cell=element("td","Small sample warning: fewer than 30 applicants.");
+   cell.colSpan=6;cell.className="error";
+   warning.append(cell);body.append(warning);
+  }
+ }
+
+ const comparisons=document.getElementById("comparisons");
+ comparisons.replaceChildren(
+  comparison("All applicants",data.all_comparison),
+  comparison("Qualified applicants",data.qualified_comparison)
+ );
+ results.classList.remove("hidden");
+}
+
+analyseButton.addEventListener("click",async()=>{
+ const file=fileInput.files[0];
+ message.textContent="";
+ message.className="";
+ results.classList.add("hidden");
+
+ if(!file){
+  message.textContent="Choose a file first.";
+  message.className="error";
+  return;
+ }
+
+ analyseButton.disabled=true;
+ analyseButton.textContent="Analysing...";
+
+ try{
+  const form=new FormData();
+  form.append("file",file);
+  const response=await fetch("/api/analyse",{method:"POST",body:form});
+  const data=await response.json();
+
+  if(!response.ok)throw new Error(data.error||"Analysis failed.");
+
+  display(data);
+  message.textContent="Analysis complete. Review the limitations before interpreting the results.";
+  message.className="good";
+ }catch(error){
+  message.textContent="Error: "+error.message;
+  message.className="error";
+ }finally{
+  analyseButton.disabled=false;
+  analyseButton.textContent="Analyse file";
+ }
+});
+</script>
+</body>
+</html>
