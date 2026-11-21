@@ -51,6 +51,8 @@ footer{border-top:1px solid var(--border);margin-top:30px;padding-top:15px}
 <input id="file" type="file" accept="*/*">
 <button id="analyse">Analyse file</button>
 <a class="sample" href="/sample_recruitment.csv" download>Download sample CSV</a>
+<button id="download-report" type="button" disabled>Download analysis report (CSV)</button>
+<p class="small">Download your calculated group statistics, selection rates and fairness comparisons after analysing a file.</p>
 <p class="small">Files are sent to the hosted server for analysis and are not intentionally stored by this application. Do not upload personal or confidential candidate information. Maximum file size: 10 MB.</p>
 <div id="message" role="status" aria-live="polite"></div>
 </section>
@@ -72,6 +74,7 @@ footer{border-top:1px solid var(--border);margin-top:30px;padding-top:15px}
 <div class="panel">
 <h2>4. Rate comparisons</h2>
 <div id="comparisons"></div>
+
 </div>
 <div class="panel warning">
 <h2>Interpretation and limitations</h2>
@@ -133,6 +136,8 @@ const fileInput=document.getElementById("file");
 const message=document.getElementById("message");
 const results=document.getElementById("results");
 const analyseButton=document.getElementById("analyse");
+const downloadReportButton=document.getElementById("download-report");
+let latestReportData=null;
 
 function element(tag,text){
  const node=document.createElement(tag);
@@ -192,14 +197,79 @@ function display(data){
   comparison("All applicants",data.all_comparison),
   comparison("Qualified applicants",data.qualified_comparison)
  );
+ latestReportData=data;
+ downloadReportButton.disabled=false;
  results.classList.remove("hidden");
 }
+
+function csvValue(value){
+ return '"' + String(value ?? "").replace(/"/g, '""') + '"';
+}
+
+function downloadReport(data){
+ const rows = [
+  ["Section","Group","Metric","Value"],
+  ["Dataset overview","","Candidate records",data.total],
+  ["Dataset overview","","Number of groups",data.group_count],
+  ["Dataset overview","","Selected candidates",data.selected_total],
+  ["Dataset overview","","Overall selection rate",(data.overall_rate*100).toFixed(1)+"%"]
+ ];
+
+ for(const g of data.groups){
+  rows.push(
+   ["Group results",g.group,"Applicants",g.applicants],
+   ["Group results",g.group,"Selected",g.selected],
+   ["Group results",g.group,"Selection rate",(g.all_rate*100).toFixed(1)+"%"],
+   ["Group results",g.group,"Qualified applicants",g.qualified],
+   ["Group results",g.group,"Qualified selection rate",
+    g.qualified_rate===null?"N/A":(g.qualified_rate*100).toFixed(1)+"%"],
+   ["Group results",g.group,"Small sample warning",
+    g.small_sample?"Yes — fewer than 30 applicants":"No"]
+  );
+ }
+
+ for(const [name,comparison] of [
+  ["All applicants",data.all_comparison],
+  ["Qualified applicants",data.qualified_comparison]
+ ]){
+  rows.push(["Rate comparisons","",name+" comparison",comparison.message]);
+  if(comparison.ratio!==undefined){
+   rows.push(
+    ["Rate comparisons","",name+" lowest-rate group",comparison.low_group],
+    ["Rate comparisons","",name+" highest-rate group",comparison.high_group],
+    ["Rate comparisons","",name+" lowest-to-highest ratio",comparison.ratio.toFixed(2)]
+   );
+  }
+ }
+
+ rows.push(
+  ["Limitations","","0.80 threshold","Optional screening convention, not proof of discrimination."],
+  ["Limitations","","Interpretation","Results are descriptive and do not establish causation, fairness or legal compliance."]
+ );
+
+ const csv="\uFEFF"+rows.map(row=>row.map(csvValue).join(",")).join("\r\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement("a");
+ link.href=url;
+ link.download="recruitment_fairness_analysis_"+new Date().toISOString().slice(0,10)+".csv";
+ document.body.append(link);
+ link.click();
+ link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+downloadReportButton.addEventListener("click",()=>{
+ if(latestReportData)downloadReport(latestReportData);
+});
 
 analyseButton.addEventListener("click",async()=>{
  const file=fileInput.files[0];
  message.textContent="";
  message.className="";
  results.classList.add("hidden");
+ latestReportData=null;
+ downloadReportButton.disabled=true;
 
  if(!file){
   message.textContent="Choose a file first.";
